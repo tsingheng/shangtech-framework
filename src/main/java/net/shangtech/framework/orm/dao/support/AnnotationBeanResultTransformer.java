@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 
 		return result;
 	}
-
+	
 	private void initialize(String[] aliases) {
 		PropertyAccessor propertyAccessor = new ChainedPropertyAccessor(
 				new PropertyAccessor[] {
@@ -73,22 +74,34 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 		);
 		this.aliases = new String[ aliases.length ];
 		setters = new Setter[ aliases.length ];
-		Field[] fields = resultClass.getDeclaredFields();
 		Map<String, String> map = new HashMap<String, String>();
-		for(Field field : fields){
-			Column column = field.getAnnotation(Column.class);
-			if(column == null){
-				continue;
+		
+		List<Class<?>> classChain = new LinkedList<Class<?>>();
+		classChain.add(resultClass);
+		while(!classChain.isEmpty()){
+			Class<?> clazz = classChain.remove(0);
+			Class<?> superClass = clazz.getSuperclass();
+			if(superClass != null){
+				classChain.add(superClass);
 			}
-			String name = column.name();
-			if(StringUtils.isBlank(name)){
-				name = field.getName();
+			Field[] fields = clazz.getDeclaredFields();
+			for(Field field : fields){
+				Column column = field.getAnnotation(Column.class);
+				if(column == null){
+					continue;
+				}
+				String name = column.name();
+				if(StringUtils.isBlank(name)){
+					name = field.getName();
+				}
+				if(map.get(name) != null){
+					continue;
+					//throw new IllegalStateException("dumplicated alias [" + name + "] for [" + resultClass + "]");
+				}
+				map.put(name, field.getName());
 			}
-			if(map.get(name) != null){
-				throw new IllegalStateException("dumplicated alias [" + name + "] for [" + resultClass + "]");
-			}
-			map.put(name, field.getName());
 		}
+		
 		for ( int i = 0; i < aliases.length; i++ ) {
 			String alias = aliases[ i ];
 			if ( alias != null ) {
