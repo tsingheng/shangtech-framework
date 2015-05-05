@@ -2,6 +2,7 @@ package net.shangtech.framework.orm.dao.support;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,6 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
+
+import net.shangtech.framework.orm.dao.converter.Converter;
+import net.shangtech.framework.orm.dao.converter.Object2IntegerConverter;
+import net.shangtech.framework.orm.dao.converter.Object2LongConverter;
+import net.shangtech.framework.orm.dao.converter.Object2ObjectConverter;
+import net.shangtech.framework.orm.dao.converter.Object2StringConverter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.HibernateException;
@@ -27,6 +34,9 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 	private boolean isInitialized;
 	private String[] aliases;
 	private Setter[] setters;
+	private Class<?>[] classes;
+	private Converter<?>[] converters;
+	private Class<?> entityClass;
 
 	public AnnotationBeanResultTransformer(Class<?> resultClass) {
 		if ( resultClass == null ) {
@@ -51,7 +61,28 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 
 			for ( int i = 0; i < aliases.length; i++ ) {
 				if ( setters[i] != null ) {
-					setters[i].set( result, tuple[i], null );
+					Converter<?> converter = converters[i];
+					if(converter == null){
+						//Class<?> valueClass = tuple[i].getClass();
+						Class<?> requiredClass = classes[i];
+						if(!requiredClass.isInstance(tuple[i])){
+							if (requiredClass == Long.class) {
+								converter = new Object2LongConverter();
+							} else if (requiredClass == Integer.class) {
+								converter = new Object2IntegerConverter();
+							} else if (requiredClass == String.class) {
+								converter = new Object2StringConverter();
+							}
+						}else{
+							converter = new Object2ObjectConverter();
+						}
+						converters[i] = converter;
+					}
+					Object value = tuple[i];
+					if(converter != null){
+						value = converter.convert(tuple[i]);
+					}
+					setters[i].set( result, value, null );
 				}
 			}
 		}
@@ -74,7 +105,9 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 		);
 		this.aliases = new String[ aliases.length ];
 		setters = new Setter[ aliases.length ];
-		Map<String, String> map = new HashMap<String, String>();
+		classes = new Class<?>[ aliases.length ];
+		converters = new Converter<?>[ aliases.length ];
+		Map<String, Field> map = new HashMap<String, Field>();
 		
 		List<Class<?>> classChain = new LinkedList<Class<?>>();
 		classChain.add(resultClass);
@@ -83,6 +116,9 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 			Class<?> superClass = clazz.getSuperclass();
 			if(superClass != null){
 				classChain.add(superClass);
+			}
+			if(BaseEntity.class.equals(superClass)){
+				entityClass = clazz;
 			}
 			Field[] fields = clazz.getDeclaredFields();
 			for(Field field : fields){
@@ -98,7 +134,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 					continue;
 					//throw new IllegalStateException("dumplicated alias [" + name + "] for [" + resultClass + "]");
 				}
-				map.put(name, field.getName());
+				map.put(name, field);
 			}
 		}
 		
@@ -106,11 +142,17 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 			String alias = aliases[ i ];
 			if ( alias != null ) {
 				this.aliases[ i ] = alias;
-				String propertyName = map.get(alias);
-				if(propertyName == null){
+				Field field = map.get(alias);
+				if(field == null){
 					throw new PropertyNotFoundException("Could not find setter for " + alias + " on " + resultClass);
 				}
-				setters[ i ] = propertyAccessor.getSetter(resultClass, propertyName);;
+				String propertyName = field.getName();
+				classes[ i ] = field.getType();
+				//如果是id，属性类型是Object
+				if(Object.class.equals(field.getType()) && field.getDeclaringClass().equals(BaseEntity.class) && entityClass != null){
+					classes[ i ] = (Class<?>) ((ParameterizedType) (entityClass.getGenericSuperclass())).getActualTypeArguments()[0];
+				}
+				setters[ i ] = propertyAccessor.getSetter(resultClass, propertyName);
 			}
 		}
 		isInitialized = true;

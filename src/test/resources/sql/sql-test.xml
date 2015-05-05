@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.shangtech.net/schema/sqls" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.shangtech.net/schema/sqls
+		http://www.shangtech.net/schema/sqls/shangtech-dao-sql.xsd">
+	<!-- 获取运费模板 -->
+	<sql id="SkuBean.findSkuPage">
+		<![CDATA[
+			SELECT *, now() as create_time FROM t_sku
+		]]>
+	</sql>
+</sqls>
