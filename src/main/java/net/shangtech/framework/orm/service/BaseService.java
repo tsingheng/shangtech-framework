@@ -5,7 +5,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
 import net.shangtech.framework.orm.dao.IBaseDao;
-import net.shangtech.framework.orm.dao.support.BaseEntity;
 import net.shangtech.framework.orm.dao.support.MapHolder;
 import net.shangtech.framework.orm.dao.support.Pagination;
 import net.shangtech.framework.orm.dao.support.QueryBean;
@@ -15,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 @SuppressWarnings("unchecked")
-public class BaseService<T extends BaseEntity<Long>> implements IBaseService<T> {
+public class BaseService<T> implements IBaseService<T> {
 	
 	private static final String FIELD_BASE_DAO = "dao";
 	
@@ -24,12 +23,7 @@ public class BaseService<T extends BaseEntity<Long>> implements IBaseService<T> 
 	@Override
 	@Transactional
     public void save(T entity) {
-		if(entity.getId() != null){
-			update(entity);
-		}
-		else{
-			dao().save(entity);
-		}
+		dao().save(entity);
     }
 
 	@Override

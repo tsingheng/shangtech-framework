@@ -3,10 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.shangtech.net/schema/sqls
 		http://www.shangtech.net/schema/sqls/shangtech-dao-sql.xsd">
-	<!-- 获取运费模板 -->
-	<sql id="SkuBean.findSkuPage">
+	
+	<sql id="SkuBean.findSkuPage" template="true">
 		<![CDATA[
-			SELECT *, now() as create_time FROM t_sku
+			SELECT *, now() as create_time FROM t_sku order by $sort $asc
 		]]>
 	</sql>
 </sqls>

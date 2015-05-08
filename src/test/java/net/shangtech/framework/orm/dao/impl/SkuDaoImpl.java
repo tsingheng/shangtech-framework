@@ -14,7 +14,10 @@ public class SkuDaoImpl extends BaseDao<Sku> implements SkuDao {
 
 	@Override
 	public Pagination<SkuBean> findSkuPage(Pagination<SkuBean> pagination) {
-		return super.findBySql("SkuBean.findSkuPage", new MapHolder<String>(), pagination, SkuBean.class);
+		MapHolder<String> holder = new MapHolder<String>();
+		holder.put("sort", "category_id");
+		holder.put("asc", "desc");
+		return super.findBySql("SkuBean.findSkuPage", holder, pagination, SkuBean.class);
 	}
 	
 }
