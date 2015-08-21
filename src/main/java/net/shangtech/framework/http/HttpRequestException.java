@@ -11,4 +11,8 @@ public class HttpRequestException extends Exception {
 	public HttpRequestException(){
 		super();
 	}
+	
+	public HttpRequestException(Exception e){
+		super(e);
+	}
 }

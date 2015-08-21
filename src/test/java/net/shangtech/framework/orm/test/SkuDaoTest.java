@@ -35,4 +35,9 @@ public class SkuDaoTest extends BaseSpringTest {
 		}
 	}
 	
+	@Test
+	public void testQuery(){
+		skuDao.findSku();
+	}
+	
 }

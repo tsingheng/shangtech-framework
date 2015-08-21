@@ -8,4 +8,7 @@ public interface SkuDao extends IBaseDao<Sku> {
 	
 	Pagination<SkuBean> findSkuPage(Pagination<SkuBean> pagination);
 	
+	SkuBean findSku();
+	
+	void updateSku();
 }

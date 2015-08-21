@@ -9,4 +9,16 @@
 			SELECT *, now() as create_time FROM t_sku order by $sort $asc
 		]]>
 	</sql>
+	
+	<sql id="SkuBean.findForUpdate">
+		<![CDATA[
+			SELECT * from t_sku where id=1 for update
+		]]>
+	</sql>
+	
+	<sql id="SkuBean.updateSku">
+		<![CDATA[
+			update t_sku set content='test' where id=1
+		]]>
+	</sql>
 </sqls>

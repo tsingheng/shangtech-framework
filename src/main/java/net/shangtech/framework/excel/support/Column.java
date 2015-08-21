@@ -16,7 +16,7 @@ public @interface Column {
 	
 	String name();
 	
-	String pattern();
+	String pattern() default "";
 	
 	Class<? extends ColumnConverter<?>> converter() default Object2StringConverter.class;
 }

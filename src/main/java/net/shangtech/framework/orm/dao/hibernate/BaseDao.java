@@ -226,6 +226,19 @@ public class BaseDao<T> extends HibernateDaoSupport implements IBaseDao<T> {
 		final Class<T> clazz = getEntityClass();
 		return findOneBySql(sqlId, holder, clazz);
 	}
+	
+	protected void execBySql(String sqlId){
+		final String sql = queryProvider.getQueryById(sqlId, null);
+		getHibernateTemplate().execute(new HibernateCallback<Object>() {
+
+			@Override
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				SQLQuery query = session.createSQLQuery(sql);
+				query.executeUpdate();
+				return null;
+			}
+		});
+	}
 
 	protected <E> List<E> findBySql(String sqlId, final MapHolder<String> holder, final Class<E> clazz) {
 		final Map<String, Object> params = holder.getMap();

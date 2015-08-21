@@ -11,4 +11,8 @@ public class WorkbookReadException extends RuntimeException {
 	public WorkbookReadException(){
 		super();
 	}
+	
+	public WorkbookReadException(String message){
+		super(message);
+	}
 }

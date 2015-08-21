@@ -32,7 +32,7 @@ public class HttpUtils {
 			}
 			return EntityUtils.toString(response.getEntity());
 		}catch (Exception e) {
-			throw new HttpRequestException();
+			throw new HttpRequestException(e);
 		}finally{
 			IOUtils.closeQuietly(response);
 			IOUtils.closeQuietly(client);
@@ -49,7 +49,7 @@ public class HttpUtils {
 			}
 			return EntityUtils.toString(response.getEntity());
 		}catch (Exception e) {
-			throw new HttpRequestException();
+			throw new HttpRequestException(e);
 		}finally{
 			IOUtils.closeQuietly(response);
 		}
@@ -73,7 +73,7 @@ public class HttpUtils {
 			return EntityUtils.toString(response.getEntity(), "UTF-8");
 		}catch(Exception e){
 			e.printStackTrace();
-			throw new HttpRequestException();
+			throw new HttpRequestException(e);
 		}finally{
 			IOUtils.closeQuietly(response);
 		}

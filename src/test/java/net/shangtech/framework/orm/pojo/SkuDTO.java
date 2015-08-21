@@ -1,81 +1,60 @@
-package net.shangtech.framework.orm.entity;
+package net.shangtech.framework.orm.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-import org.hibernate.annotations.Index;
+public class SkuDTO implements Serializable {
 
-import net.shangtech.framework.orm.dao.support.BaseEntity;
-
-@Entity
-@Table(name = "t_sku")
-public class Sku extends BaseEntity<Long> {
-
-	private static final long serialVersionUID = 1L;
-	@Column(name = "sku_name")
+	private static final long serialVersionUID = 7549020653425573680L;
+	
+	private Long id;
+	
 	private String name;
 	
-    @Column(name = "sku_code")
-	@Index(name = "idx_sku_code")
 	private String code;
 	
-    @Column
 	private String image;
 	
-	@Column(name = "market_price")
 	private Double marketPrice;
 	
-	@Column(name = "sell_price")
 	private Double sellPrice;
 	
-	@Column(name = "color")
 	private String color;
 	
-	@Column(name = "brand_id")
-	@Index(name = "idx_sku_brand_id")
 	private Long brandId;
 	
-	@Column(name = "brand_code")
 	private String brandCode;
 	
-	@Column(name = "category_id")
-	@Index(name = "idx_sku_category_id")
 	private Long categoryId;
 	
-	@Column(name = "status")
 	private String status;
 	
-	@Lob
-	@Column(name = "images")
 	private String images;
 	
-	@Lob
-	@Column(name = "content")
 	private String content;
 	
-	@Column(name = "vid")
-	@Index(name = "idx_sku_vid")
 	private String vid;
 	
-	@Column(name = "colors")
 	private String colors;
 	
-	@Column(name = "tags")
 	private String tags;
 	
-	@Column(name = "min")
 	private Integer min;
 	
-	@Column(name = "max")
 	private Integer max;
 	
-	@Column(name = "image_num")
 	private Integer imageNum;
 	
-	@Column(name = "weight")
 	private Double weight;
+
+	
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getName() {
 		return name;
@@ -228,5 +207,5 @@ public class Sku extends BaseEntity<Long> {
 	public void setWeight(Double weight) {
 		this.weight = weight;
 	}
-	
+
 }
