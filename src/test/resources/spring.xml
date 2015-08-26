@@ -5,12 +5,16 @@
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:dao="http://www.shangtech.net/schema/core"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/tx
 		http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
 		http://www.springframework.org/schema/context
-		http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.shangtech.net/schema/core
+		http://www.shangtech.net/schema/core/spring-dao.xsd
+		">
 	<bean id="propertyConfigure" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
@@ -18,6 +22,7 @@
 			</list>
 		</property>
 	</bean>
+	<dao:dao-config base-package="net.shangtech"/>
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<property name="driverClassName" value="${jdbc.driver}"></property>
 		<property name="initialSize" value="10"></property>

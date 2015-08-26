@@ -326,4 +326,9 @@ public class BaseDao<T> extends HibernateDaoSupport implements IBaseDao<T> {
 		return pagination;
 	}
 
+	@Override
+	public void tt() {
+		System.out.println("sssstt");
+	}
+
 }
