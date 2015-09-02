@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.shangtech.net/schema/sqls" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+	<xsd:element name="sqls">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="sql" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="sql">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="description" minOccurs="1"></xsd:element>
+				<xsd:element ref="query" minOccurs="1" maxOccurs="1"></xsd:element>
+				<xsd:element ref="count" minOccurs="0" maxOccurs="1"></xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="string"/>
+			<xsd:attribute name="template" type="boolean"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="query"></xsd:element>
+	<xsd:element name="count"></xsd:element>
+	<xsd:element name="description">
+		<xsd:complexType mixed="true">
+			<xsd:choice minOccurs="0" maxOccurs="unbounded"></xsd:choice>
+		</xsd:complexType>
+	</xsd:element>
+</schema>
