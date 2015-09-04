@@ -19,7 +19,6 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
-import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -156,30 +155,45 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		}
 	}
 	
-	protected int batchUpdateBySql(String sqlId, MapHolder<String> holder){
-		
-		return 0;
+	protected int batchUpdateBySql(String sqlId, final MapHolder<String> holder){
+		final String sql = queryProvider.getSqlById(sqlId, holder);
+		return hibernateTemplate.executeWithNativeSession(new HibernateCallback<Integer>() {
+			@Override
+			public Integer doInHibernate(Session session) throws HibernateException, SQLException {
+				SQLQuery query = session.createSQLQuery(sql);
+				if(holder != null){
+					query.setProperties(holder.getMap());
+				}
+				return query.executeUpdate();
+			}
+		});
 	}
 	
-	protected <E> E findOneByProperty(Class<E> clazz, String sqlId, String propertyName, String value){
-		
+	protected <E> E queryOne(Class<E> clazz, String sqlId, String propertyName, Object value){
+		List<E> list = queryList(clazz, sqlId, propertyName, value);
+		if(!CollectionUtils.isEmpty(list)){
+			return list.get(0);
+		}
 		return null;
 	}
 	
-	protected <E> List<E> findByProperty(Class<E> clazz, String sqlId, String propertyName, String value, Sort...sorts){
+	protected <E> List<E> queryList(Class<E> clazz, String sqlId, String propertyName, Object value, Sort...sorts){
+		return queryList(clazz, sqlId, MapHolder.instance(propertyName, value), sorts);
+	}
+	
+	protected <E> void queryPage(Class<E> clazz, String sqlId, Pagination<E> pagination, String propertyName, Object value, Sort...sorts){
+		queryPage(clazz, sqlId, pagination, MapHolder.instance(propertyName, value), sorts);
+	}
+	
+	protected <E> E queryOne(Class<E> clazz, String sqlId, MapHolder<String> holder){
+		List<E> list = queryList(clazz, sqlId, holder);
+		if(!CollectionUtils.isEmpty(list)){
+			return list.get(0);
+		}
 		return null;
 	}
 	
-	protected <E> void findByProperty(Class<E> clazz, String sqlId, Pagination<E> pagination, String propertyName, String value, Sort...sorts){
-		
-	}
-	
-	protected <E> E findOneByProperties(Class<E> clazz, String sqlId, MapHolder<String> holder){
-		
-		return null;
-	}
-	
-	protected <E> List<E> findByProperties(final Class<E> clazz, String sqlId, final MapHolder<String> holder, Sort...sorts){
+	protected <E> List<E> queryList(final Class<E> clazz, String sqlId, final MapHolder<String> holder, Sort...sorts){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
 		if(sorts != null){
 			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
@@ -204,7 +218,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		});
 	}
 	
-	protected <E> void findByProperties(final Class<E> clazz, String sqlId, final Pagination<E> pagination, final MapHolder<String> holder, Sort...sorts){
+	protected <E> void queryPage(final Class<E> clazz, String sqlId, final Pagination<E> pagination, final MapHolder<String> holder, Sort...sorts){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
 		if(sorts != null){
 			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
