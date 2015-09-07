@@ -81,7 +81,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 		for(PropertyDescriptor pd : pds){
 			if(pd.getWriteMethod() != null){
 				mappedFields.put(pd.getName(), pd);
-				Field field = FieldUtils.getDeclaredField(resultClass, pd.getName());
+				Field field = FieldUtils.getDeclaredField(resultClass, pd.getName(), true);
 				Column column = field.getAnnotation(Column.class);
 				if(column != null && StringUtils.isNotBlank(column.name())){
 					mappedFields.put(column.name(), pd);

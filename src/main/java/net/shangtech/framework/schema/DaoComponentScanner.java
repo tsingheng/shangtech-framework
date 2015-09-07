@@ -1,4 +1,4 @@
-package net.shangtech.framework.dao.schema;
+package net.shangtech.framework.schema;
 
 import java.util.Set;
 
