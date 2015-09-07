@@ -18,6 +18,7 @@
 
 	<dao:dao-config base-package="net.shangtech.framework.daotest.dao"/>
 	
+	
 	<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<property name="driverClassName" value="${jdbc.driver}"></property>
 		<property name="initialSize" value="10"></property>

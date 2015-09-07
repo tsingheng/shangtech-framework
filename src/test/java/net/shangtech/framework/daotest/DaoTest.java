@@ -12,9 +12,10 @@ public class DaoTest extends BaseSpringTest {
 	
 	@Test
 	public void test(){
-		testDao.test1();
-		testDao.find(0L);
-		testDao.save(null);
+//		testDao.test1();
+//		testDao.find(0L);
+//		testDao.save(null);
+		System.out.println(testDao.getEntityClass());
 	}
 	
 }

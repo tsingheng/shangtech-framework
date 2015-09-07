@@ -13,6 +13,7 @@ import net.shangtech.framework.util.MapHolder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -31,7 +32,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 	@Autowired(required = false)
 	private HibernateTemplate hibernateTemplate;
 	
-	@Autowired
+	@Autowired(required = false)
 	private QueryProvider queryProvider;
 	
 	@Override
@@ -80,13 +81,13 @@ final public class BaseDao<T> implements IBaseDao<T> {
 
 	@Override
 	public List<T> findByProperties(final MapHolder<String> holder, final Sort... sorts) {
-		final StringBuilder queryString = new StringBuilder("from " + entityClass.getSimpleName() + " where 1=1 ");
+		final StringBuilder queryString = new StringBuilder("select o from " + entityClass.getSimpleName() + " o where 1=1 ");
 		if(holder != null){
 			for(String key : holder.getMap().keySet()){
 				queryString.append(" and " + key + "=:" + key);
 			}
 		}
-		if(sorts != null){
+		if(ArrayUtils.isNotEmpty(sorts)){
 			queryString.append(" order by ").append(StringUtils.join(sorts, ","));
 		}
 		return hibernateTemplate.executeWithNativeSession(new HibernateCallback<List<T>>() {
@@ -114,7 +115,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 
 	@Override
 	public void findByProperties(final Pagination<T> pagination, final MapHolder<String> holder, Sort... sorts) {
-		final StringBuilder queryString = new StringBuilder("from " + entityClass.getSimpleName());
+		final StringBuilder queryString = new StringBuilder("select o from " + entityClass.getSimpleName() + " o ");
 		final StringBuilder where = new StringBuilder(" where 1=1 ");
 		if(holder != null){
 			for(String key : holder.getMap().keySet()){
@@ -122,7 +123,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 			}
 		}
 		queryString.append(where);
-		if(sorts != null){
+		if(ArrayUtils.isNotEmpty(sorts)){
 			queryString.append(" order by ").append(StringUtils.join(sorts, ","));
 		}
 		List<T> list = hibernateTemplate.executeWithNativeSession(new HibernateCallback<List<T>>() {
@@ -195,7 +196,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 	
 	protected <E> List<E> queryList(final Class<E> clazz, String sqlId, final MapHolder<String> holder, Sort...sorts){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
-		if(sorts != null){
+		if(ArrayUtils.isNotEmpty(sorts)){
 			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
 				throw new IllegalArgumentException("dumplicated order by of [" + sqlId + "]");
 			}
@@ -220,7 +221,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 	
 	protected <E> void queryPage(final Class<E> clazz, String sqlId, final Pagination<E> pagination, final MapHolder<String> holder, Sort...sorts){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
-		if(sorts != null){
+		if(ArrayUtils.isNotEmpty(sorts)){
 			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
 				throw new IllegalArgumentException("dumplicated order by of [" + sqlId + "]");
 			}

@@ -1,5 +1,7 @@
 package net.shangtech.framework.schema;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 import net.shangtech.framework.dao.IBaseDao;
@@ -56,6 +58,14 @@ public class DaoComponentScanner extends ClassPathBeanDefinitionScanner {
 			definition.setParentName("parentGenericDaoProxy");
 			definition.getPropertyValues().addPropertyValue("proxyInterfaces", new Class<?>[]{clazz});
 			definition.getPropertyValues().addPropertyValue("target", baseDaoDefinition);
+			
+			for(Type type : clazz.getGenericInterfaces()){
+				if(type instanceof ParameterizedType){
+					Class<?> entityClass = (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
+					definition.getPropertyValues().addPropertyValue("object.entityClass", entityClass);
+				}
+			}
+			
 			BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, definitionHolder.getBeanName());
 			BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 		} catch (ClassNotFoundException e) {
