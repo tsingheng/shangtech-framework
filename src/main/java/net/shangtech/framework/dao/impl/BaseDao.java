@@ -148,7 +148,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 			Long totalCount = hibernateTemplate.executeWithNativeSession(new HibernateCallback<Long>() {
 				@Override
 				public Long doInHibernate(Session session) throws HibernateException, SQLException {
-					Query query = session.createQuery("select count(o) from " + entityClass.getSimpleName() + " o where 1=1 " + where.toString());
+					Query query = session.createQuery("select count(o) from " + entityClass.getSimpleName() + " o " + where.toString());
 					return (Long) query.uniqueResult();
 				}
 			});
