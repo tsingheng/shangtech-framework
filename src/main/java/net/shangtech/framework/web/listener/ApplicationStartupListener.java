@@ -17,6 +17,7 @@ public class ApplicationStartupListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
+		sce.getServletContext().setAttribute("ctx", sce.getServletContext().getContextPath());
 		ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(sce.getServletContext());
 		SpringUtils.setApplicationContext(ctx);
 	}
