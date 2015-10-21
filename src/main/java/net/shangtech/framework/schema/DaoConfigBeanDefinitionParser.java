@@ -2,10 +2,6 @@ package net.shangtech.framework.schema;
 
 import java.util.Set;
 
-import net.shangtech.framework.dao.impl.BaseDao;
-import net.shangtech.framework.dao.impl.QueryInterceptor;
-
-import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
@@ -16,6 +12,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
+
+import net.shangtech.framework.dao.impl.BaseDao;
+import net.shangtech.framework.dao.impl.ProxyFactoryBean;
+import net.shangtech.framework.dao.impl.QueryInterceptor;
 
 public class DaoConfigBeanDefinitionParser extends ComponentScanBeanDefinitionParser {
 	

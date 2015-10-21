@@ -62,7 +62,7 @@ public class DaoComponentScanner extends ClassPathBeanDefinitionScanner {
 			for(Type type : clazz.getGenericInterfaces()){
 				if(type instanceof ParameterizedType){
 					Class<?> entityClass = (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
-					definition.getPropertyValues().addPropertyValue("object.entityClass", entityClass);
+					definition.getPropertyValues().addPropertyValue("entityClass", entityClass);
 				}
 			}
 			

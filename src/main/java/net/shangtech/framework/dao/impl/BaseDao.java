@@ -156,7 +156,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		}
 	}
 	
-	protected int batchUpdateBySql(String sqlId, final MapHolder<String> holder){
+	public int batchUpdateBySql(String sqlId, final MapHolder<String> holder){
 		final String sql = queryProvider.getSqlById(sqlId, holder);
 		return hibernateTemplate.executeWithNativeSession(new HibernateCallback<Integer>() {
 			@Override
@@ -170,7 +170,7 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		});
 	}
 	
-	protected <E> E queryOne(Class<E> clazz, String sqlId, String propertyName, Object value){
+	public <E> E queryOne(Class<E> clazz, String sqlId, String propertyName, Object value){
 		List<E> list = queryList(clazz, sqlId, propertyName, value);
 		if(!CollectionUtils.isEmpty(list)){
 			return list.get(0);
@@ -178,15 +178,15 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		return null;
 	}
 	
-	protected <E> List<E> queryList(Class<E> clazz, String sqlId, String propertyName, Object value, Sort...sorts){
-		return queryList(clazz, sqlId, MapHolder.instance(propertyName, value), sorts);
+	public <E> List<E> queryList(Class<E> clazz, String sqlId, String propertyName, Object value){
+		return queryList(clazz, sqlId, MapHolder.instance(propertyName, value));
 	}
 	
-	protected <E> void queryPage(Class<E> clazz, String sqlId, Pagination<E> pagination, String propertyName, Object value, Sort...sorts){
-		queryPage(clazz, sqlId, pagination, MapHolder.instance(propertyName, value), sorts);
+	public <E> void queryPage(Class<E> clazz, String sqlId, Pagination<E> pagination, String propertyName, Object value){
+		queryPage(clazz, sqlId, pagination, MapHolder.instance(propertyName, value));
 	}
 	
-	protected <E> E queryOne(Class<E> clazz, String sqlId, MapHolder<String> holder){
+	public <E> E queryOne(Class<E> clazz, String sqlId, MapHolder<String> holder){
 		List<E> list = queryList(clazz, sqlId, holder);
 		if(!CollectionUtils.isEmpty(list)){
 			return list.get(0);
@@ -194,14 +194,8 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		return null;
 	}
 	
-	protected <E> List<E> queryList(final Class<E> clazz, String sqlId, final MapHolder<String> holder, Sort...sorts){
+	public <E> List<E> queryList(final Class<E> clazz, String sqlId, final MapHolder<String> holder){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
-		if(ArrayUtils.isNotEmpty(sorts)){
-			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
-				throw new IllegalArgumentException("dumplicated order by of [" + sqlId + "]");
-			}
-			sql.append(" order by ").append(StringUtils.join(sorts, ","));
-		}
 		return hibernateTemplate.executeWithNativeSession(new HibernateCallback<List<E>>() {
 			@Override
 			public List<E> doInHibernate(Session session) throws HibernateException, SQLException {
@@ -209,7 +203,9 @@ final public class BaseDao<T> implements IBaseDao<T> {
 				if(holder != null){
 					query.setProperties(holder.getMap());
 				}
-				if(clazz.isAssignableFrom(Map.class)){
+				if(clazz.equals(entityClass)){
+					query.addEntity(entityClass);
+				}else if(clazz.isAssignableFrom(Map.class)){
 					query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 				}else if(!clazz.equals(String.class) && !ClassUtils.isPrimitiveOrWrapper(clazz)){
 					query.setResultTransformer(AnnotationBeanResultTransformer.get(clazz));
@@ -219,14 +215,8 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		});
 	}
 	
-	protected <E> void queryPage(final Class<E> clazz, String sqlId, final Pagination<E> pagination, final MapHolder<String> holder, Sort...sorts){
+	public <E> void queryPage(final Class<E> clazz, String sqlId, final Pagination<E> pagination, final MapHolder<String> holder){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
-		if(ArrayUtils.isNotEmpty(sorts)){
-			if(StringUtils.containsIgnoreCase(sql.toString(), " order by ")){
-				throw new IllegalArgumentException("dumplicated order by of [" + sqlId + "]");
-			}
-			sql.append(" order by ").append(StringUtils.join(sorts, ","));
-		}
 		List<E> list = hibernateTemplate.executeWithNativeSession(new HibernateCallback<List<E>>() {
 			@Override
 			public List<E> doInHibernate(Session session) throws HibernateException, SQLException {
@@ -236,7 +226,9 @@ final public class BaseDao<T> implements IBaseDao<T> {
 				}
 				query.setFirstResult(pagination.getStart());
 				query.setMaxResults(pagination.getLimit());
-				if(clazz.isAssignableFrom(Map.class)){
+				if(clazz.equals(entityClass)){
+					query.addEntity(entityClass);
+				}else if(clazz.isAssignableFrom(Map.class)){
 					query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 				}else if(!clazz.equals(String.class) && !ClassUtils.isPrimitiveOrWrapper(clazz)){
 					query.setResultTransformer(AnnotationBeanResultTransformer.get(clazz));
@@ -254,7 +246,8 @@ final public class BaseDao<T> implements IBaseDao<T> {
 				@Override
 				public Long doInHibernate(Session session) throws HibernateException, SQLException {
 					SQLQuery query = session.createSQLQuery(countSql);
-					return (Long) query.uniqueResult();
+					Number result = (Number) query.uniqueResult();
+					return result.longValue();
 				}
 			});
 			pagination.setTotalCount(totalCount.intValue());

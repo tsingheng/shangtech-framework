@@ -25,7 +25,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 	
 	private final Class<?> resultClass;
 	
-	private Map<String, PropertyDescriptor> mappedFields;
+	private Map<String, PropertyDescriptor> mappedFields = new HashMap<>();
 	
 	private static final Map<Class<?>, AnnotationBeanResultTransformer> transformers = new HashMap<Class<?>, AnnotationBeanResultTransformer>();
 	
@@ -81,7 +81,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 		for(PropertyDescriptor pd : pds){
 			if(pd.getWriteMethod() != null){
 				mappedFields.put(pd.getName(), pd);
-				Field field = FieldUtils.getDeclaredField(resultClass, pd.getName(), true);
+				Field field = FieldUtils.getField(resultClass, pd.getName(), true);
 				Column column = field.getAnnotation(Column.class);
 				if(column != null && StringUtils.isNotBlank(column.name())){
 					mappedFields.put(column.name(), pd);
@@ -94,7 +94,7 @@ public class AnnotationBeanResultTransformer implements ResultTransformer, Seria
 	@SuppressWarnings("rawtypes")
 	@Override
 	public List transformList(List collection) {
-		return null;
+		return collection;
 	}
 
 }

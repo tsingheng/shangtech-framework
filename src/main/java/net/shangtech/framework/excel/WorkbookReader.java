@@ -27,12 +27,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.util.CollectionUtils;
 
 public class WorkbookReader<T> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WorkbookReader.class);
 
+	private int startSheet;
+	
+	private int endSheet;
+	
 	private Map<String, List<T>> result;
+	
+	private List<T> allResult;
 	
 	private List<ExcelError> errors;
 	
@@ -69,6 +76,9 @@ public class WorkbookReader<T> {
 		if(sheetNum == 0){
 			return;
 		}
+		if(endSheet > 0){
+			sheetNum = endSheet;
+		}
 		
 		result = new HashMap<String, List<T>>();
 		WorkSheet workSheet = modelClass.getAnnotation(WorkSheet.class);
@@ -76,7 +86,7 @@ public class WorkbookReader<T> {
 		if(workSheet != null){
 			start = workSheet.start();
 		}
-		for(int i = 0; i < sheetNum; i++){
+		for(int i = startSheet; i < sheetNum; i++){
 			List<T> resultOfSheet = new LinkedList<T>();
 			Sheet sheet = book.getSheetAt(i);
 			result.put(sheet.getSheetName(), resultOfSheet);
@@ -101,6 +111,9 @@ public class WorkbookReader<T> {
 	}
 	
 	private Object getCellValue(Cell cell){
+		if(cell == null){
+			return null;
+		}
 		switch (cell.getCellType()){
 		case Cell.CELL_TYPE_BLANK:
 		case Cell.CELL_TYPE_ERROR:
@@ -122,6 +135,19 @@ public class WorkbookReader<T> {
 
 	public void setResult(Map<String, List<T>> result) {
 		this.result = result;
+	}
+	
+	public List<T> getAllResult(){
+		if(CollectionUtils.isEmpty(result)){
+			return null;
+		}
+		if(allResult == null){
+			allResult = new LinkedList<>();
+			for(List<T> list : result.values()){
+				allResult.addAll(list);
+			}
+		}
+		return allResult;
 	}
 
 	public List<ExcelError> getErrors() {
@@ -154,6 +180,22 @@ public class WorkbookReader<T> {
 				}
 			}
 		}
+	}
+
+	public int getStartSheet() {
+		return startSheet;
+	}
+
+	public void setStartSheet(int startSheet) {
+		this.startSheet = startSheet;
+	}
+
+	public int getEndSheet() {
+		return endSheet;
+	}
+
+	public void setEndSheet(int endSheet) {
+		this.endSheet = endSheet;
 	}
 	
 }
