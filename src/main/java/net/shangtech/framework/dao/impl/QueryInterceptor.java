@@ -3,7 +3,6 @@ package net.shangtech.framework.dao.impl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -56,19 +55,14 @@ public class QueryInterceptor implements MethodInterceptor {
 		}else{
 			MapHolder<String> holder = new MapHolder<>();
 			args.add(holder);
-			TypeVariable<Method>[] variables = method.getTypeParameters();
+			Annotation[][] annotations = method.getParameterAnnotations();
 			for(int i = 0; i < arguments.length; i++){
 				Object arg = arguments[i];
 				if(arg.getClass().equals(Pagination.class)){
 					args.add(arg);
 				}else if(arg.getClass().equals(Sort.class)){
-					TypeVariable<Method> variable = variables[i];
-					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
-					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
-						holder.put(variable.getName(), arg);
-					}else{
-						holder.put(queryParam.value(), arg);
-					}
+					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
+					holder.put(queryParam.value(), arg);
 				}
 			}
 		}
@@ -116,20 +110,12 @@ public class QueryInterceptor implements MethodInterceptor {
 			}
 		}else{
 			MapHolder<String> holder = new MapHolder<>();
-//			TypeVariable<Method>[] variables = method.getTypeParameters();
 			Annotation[][] annotations = method.getParameterAnnotations();
 			for(int i = 0; i < arguments.length; i++){
 				Object arg = arguments[i];
 				if(arg.getClass().equals(Pagination.class)){
 					args.add(arg);
 				}else{
-//					TypeVariable<Method> variable = variables[i];
-//					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
-//					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
-//						holder.put(variable.getName(), arg);
-//					}else{
-//						holder.put(queryParam.value(), arg);
-//					}
 					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
 					holder.put(queryParam.value(), arg);
 				}
