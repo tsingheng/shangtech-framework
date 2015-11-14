@@ -13,5 +13,7 @@ public @interface NativeQuery {
 	
 	Class<?> model() default DEFAULT.class;
 	
+	Scalar[] scalars() default {};
+	
 	public static final class DEFAULT {}
 }

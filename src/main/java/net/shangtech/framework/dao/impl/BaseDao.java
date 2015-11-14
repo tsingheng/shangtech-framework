@@ -5,12 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.shangtech.framework.dao.IBaseDao;
-import net.shangtech.framework.dao.Pagination;
-import net.shangtech.framework.dao.QueryProvider;
-import net.shangtech.framework.dao.Sort;
-import net.shangtech.framework.util.MapHolder;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -20,9 +14,16 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
+import org.hibernate.type.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import net.shangtech.framework.dao.IBaseDao;
+import net.shangtech.framework.dao.Pagination;
+import net.shangtech.framework.dao.QueryProvider;
+import net.shangtech.framework.dao.Sort;
+import net.shangtech.framework.util.MapHolder;
 
 @SuppressWarnings("unchecked")
 final public class BaseDao<T> implements IBaseDao<T> {
@@ -149,6 +150,11 @@ final public class BaseDao<T> implements IBaseDao<T> {
 				@Override
 				public Long doInHibernate(Session session) throws HibernateException, SQLException {
 					Query query = session.createQuery("select count(o) from " + entityClass.getSimpleName() + " o " + where.toString());
+					if(holder != null){
+						for(Entry<String, Object> entry : holder.getMap().entrySet()){
+							query.setParameter(entry.getKey(), entry.getValue());
+						}
+					}
 					return (Long) query.uniqueResult();
 				}
 			});
@@ -194,6 +200,8 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		return null;
 	}
 	
+	public static final String SCALAR_KEY = "_scalar_key";
+	
 	public <E> List<E> queryList(final Class<E> clazz, String sqlId, final MapHolder<String> holder){
 		final StringBuilder sql = new StringBuilder(queryProvider.getSqlById(sqlId, holder));
 		return hibernateTemplate.executeWithNativeSession(new HibernateCallback<List<E>>() {
@@ -209,6 +217,13 @@ final public class BaseDao<T> implements IBaseDao<T> {
 					query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 				}else if(!clazz.equals(String.class) && !ClassUtils.isPrimitiveOrWrapper(clazz)){
 					query.setResultTransformer(AnnotationBeanResultTransformer.get(clazz));
+				}else if(ClassUtils.isPrimitiveOrWrapper(clazz)){
+					Map<String, Type> scalars = (Map<String, Type>) holder.getMap().get(SCALAR_KEY);
+					if(scalars != null){
+						for(Entry<String, Type> entry : scalars.entrySet()){
+							query.addScalar(entry.getKey(), entry.getValue());
+						}
+					}
 				}
 				return query.list();
 			}
@@ -232,6 +247,13 @@ final public class BaseDao<T> implements IBaseDao<T> {
 					query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
 				}else if(!clazz.equals(String.class) && !ClassUtils.isPrimitiveOrWrapper(clazz)){
 					query.setResultTransformer(AnnotationBeanResultTransformer.get(clazz));
+				}else if(ClassUtils.isPrimitiveOrWrapper(clazz)){
+					Map<String, Type> scalars = (Map<String, Type>) holder.getMap().get(SCALAR_KEY);
+					if(scalars != null){
+						for(Entry<String, Type> entry : scalars.entrySet()){
+							query.addScalar(entry.getKey(), entry.getValue());
+						}
+					}
 				}
 				return query.list();
 			}
@@ -246,6 +268,9 @@ final public class BaseDao<T> implements IBaseDao<T> {
 				@Override
 				public Long doInHibernate(Session session) throws HibernateException, SQLException {
 					SQLQuery query = session.createSQLQuery(countSql);
+					if(holder != null){
+						query.setProperties(holder.getMap());
+					}
 					Number result = (Number) query.uniqueResult();
 					return result.longValue();
 				}

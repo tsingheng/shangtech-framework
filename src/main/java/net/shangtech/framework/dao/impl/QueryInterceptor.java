@@ -1,17 +1,27 @@
 package net.shangtech.framework.dao.impl;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
-
-
-import net.shangtech.framework.dao.IBaseDao;
-import net.shangtech.framework.dao.impl.NativeQuery.DEFAULT;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.hibernate.type.Type;
+
+import net.shangtech.framework.dao.IBaseDao;
+import net.shangtech.framework.dao.Pagination;
+import net.shangtech.framework.dao.Sort;
+import net.shangtech.framework.dao.impl.NativeQuery.DEFAULT;
+import net.shangtech.framework.util.MapHolder;
 
 public class QueryInterceptor implements MethodInterceptor {
 
@@ -22,39 +32,151 @@ public class QueryInterceptor implements MethodInterceptor {
 			return invocation.proceed();
 		}
 		
+		Object[] arguments = invocation.getArguments();
+		
 		IBaseDao<?> dao = (IBaseDao<?>) invocation.getThis();
 		NativeQuery query = m.getAnnotation(NativeQuery.class);
-		String sqlId = null;
-		Class<?> model = null;
+		//有NativeQuery注解的才使用SQL查询
 		if(query != null){
-			sqlId = query.value();
-			model = query.model();
+			return invokeSql(m, arguments, dao);
+		}else{
+			return invokeHql(m, arguments, dao);
 		}
-		if(StringUtils.isBlank(sqlId)){
-			sqlId = dao.getEntityClass().getSimpleName() + "." + m.getName();
+	}
+	
+	private Object invokeHql(Method method, Object[] arguments, IBaseDao<?> dao) throws Throwable {
+		List<Object> args = new LinkedList<>();
+		
+		boolean hasMapHolder = hasMapHolder(arguments);
+		if(hasMapHolder){
+			for(Object arg : arguments){
+				args.add(arg);
+			}
+		}else{
+			MapHolder<String> holder = new MapHolder<>();
+			args.add(holder);
+			TypeVariable<Method>[] variables = method.getTypeParameters();
+			for(int i = 0; i < arguments.length; i++){
+				Object arg = arguments[i];
+				if(arg.getClass().equals(Pagination.class)){
+					args.add(arg);
+				}else if(arg.getClass().equals(Sort.class)){
+					TypeVariable<Method> variable = variables[i];
+					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
+					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
+						holder.put(variable.getName(), arg);
+					}else{
+						holder.put(queryParam.value(), arg);
+					}
+				}
+			}
 		}
+		
+		String methodName;
+		if(method.getReturnType().getName().equals("void")){
+			methodName = "findByProperties";
+			if (args.size() == 1) {
+				args.add(null);
+			}
+		}else if(Collection.class.isAssignableFrom(method.getReturnType())){
+			methodName = "findByProperties";
+			if (args.size() == 2) {
+				args.add(null);
+			}
+		}else{
+			methodName = "findOneByProperties";
+		}
+		return MethodUtils.invokeMethod(dao, methodName, args.toArray());
+	}
+	
+	private Object invokeSql(Method method, Object[] arguments, IBaseDao<?> dao) throws Throwable {
+		List<Object> args = new LinkedList<>();
+		
+		NativeQuery query = method.getAnnotation(NativeQuery.class);
+		
+		Class<?> model = query.model();
 		if(model == null){
 			model = dao.getEntityClass();
 		}
-		String method = null;
-		Object[] arguments = ArrayUtils.add(invocation.getArguments(), 0, sqlId);
 		if(!DEFAULT.class.equals(model)){
-			arguments = ArrayUtils.add(arguments, 0, model);
+			args.add(model);
 		}
-		if(DEFAULT.class.equals(model)){
-			method = "batchUpdateBySql";
-		}else if(m.getReturnType().getName().equals("void")){
-			//分页查询
-			method = "queryPage";
-//			arguments = ArrayUtils.add(arguments, null);
-		}else if(Collection.class.isAssignableFrom(m.getReturnType())){
-			//列表查询
-			method = "queryList";
-//			arguments = ArrayUtils.add(arguments, null);
+		
+		String sqlId = query.value();
+		if(StringUtils.isBlank(sqlId)){
+			sqlId = dao.getEntityClass().getSimpleName() + "." + method.getName();
+		}
+		args.add(sqlId);
+		
+		boolean hasMapHolder = hasMapHolder(arguments);
+		if(hasMapHolder){
+			for(Object arg : arguments){
+				args.add(arg);
+			}
 		}else{
-			method = "queryOne";
+			MapHolder<String> holder = new MapHolder<>();
+			TypeVariable<Method>[] variables = method.getTypeParameters();
+			for(int i = 0; i < arguments.length; i++){
+				Object arg = arguments[i];
+				if(arg.getClass().equals(Pagination.class)){
+					args.add(arg);
+				}else{
+					TypeVariable<Method> variable = variables[i];
+					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
+					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
+						holder.put(variable.getName(), arg);
+					}else{
+						holder.put(queryParam.value(), arg);
+					}
+				}
+			}
+			args.add(holder);
 		}
-		return MethodUtils.invokeMethod(dao, method, arguments);
+		
+		Scalar[] scalars = query.scalars();
+		if(scalars != null && scalars.length > 0){
+			Map<String, Type> scalarMap = new HashMap<>();
+			for(Scalar scalar : scalars){
+				Field field = FieldUtils.getDeclaredField(scalar.type(), "INSTANCE");
+				
+				Type type = (Type) field.get(null);
+				scalarMap.put(scalar.column(), type);
+			}
+			for(Object arg : args){
+				if(MapHolder.class.equals(arg.getClass())){
+					@SuppressWarnings("unchecked")
+					MapHolder<String> holder = (MapHolder<String>) arg;
+					holder.put(BaseDao.SCALAR_KEY, scalarMap);
+					break;
+				}
+			}
+		}
+		
+		String methodName;
+		if(DEFAULT.class.equals(model)){
+			methodName = "batchUpdateBySql";
+		}else if(method.getReturnType().getName().equals("void")){
+			//分页查询
+			methodName = "queryPage";
+		}else if(Collection.class.isAssignableFrom(method.getReturnType())){
+			//列表查询
+			methodName = "queryList";
+		}else{
+			methodName = "queryOne";
+		}
+		return MethodUtils.invokeMethod(dao, methodName, args.toArray());
 	}
 
+	private boolean hasMapHolder(Object[] arguments){
+		if(ArrayUtils.isEmpty(arguments)){
+			return false;
+		}else{
+			for(Object arg : arguments){
+				if(arg.getClass().equals(MapHolder.class)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
