@@ -1,5 +1,6 @@
 package net.shangtech.framework.dao.impl;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
@@ -115,19 +116,22 @@ public class QueryInterceptor implements MethodInterceptor {
 			}
 		}else{
 			MapHolder<String> holder = new MapHolder<>();
-			TypeVariable<Method>[] variables = method.getTypeParameters();
+//			TypeVariable<Method>[] variables = method.getTypeParameters();
+			Annotation[][] annotations = method.getParameterAnnotations();
 			for(int i = 0; i < arguments.length; i++){
 				Object arg = arguments[i];
 				if(arg.getClass().equals(Pagination.class)){
 					args.add(arg);
 				}else{
-					TypeVariable<Method> variable = variables[i];
-					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
-					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
-						holder.put(variable.getName(), arg);
-					}else{
-						holder.put(queryParam.value(), arg);
-					}
+//					TypeVariable<Method> variable = variables[i];
+//					QueryParam queryParam = variable.getAnnotation(QueryParam.class);
+//					if(queryParam == null || StringUtils.isBlank(queryParam.value())){
+//						holder.put(variable.getName(), arg);
+//					}else{
+//						holder.put(queryParam.value(), arg);
+//					}
+					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
+					holder.put(queryParam.value(), arg);
 				}
 			}
 			args.add(holder);
@@ -165,6 +169,15 @@ public class QueryInterceptor implements MethodInterceptor {
 			methodName = "queryOne";
 		}
 		return MethodUtils.invokeMethod(dao, methodName, args.toArray());
+	}
+	
+	private Annotation getQueryParam(Annotation[] annotations){
+		for(Annotation annotation : annotations){
+			if(annotation.annotationType().equals(QueryParam.class)){
+				return annotation;
+			}
+		}
+		return null;
 	}
 
 	private boolean hasMapHolder(Object[] arguments){
