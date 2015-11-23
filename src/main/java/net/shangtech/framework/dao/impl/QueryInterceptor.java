@@ -61,8 +61,12 @@ public class QueryInterceptor implements MethodInterceptor {
 				if(arg.getClass().equals(Pagination.class)){
 					args.add(arg);
 				}else if(arg.getClass().equals(Sort.class)){
+					args.add(arg);
+				}else{
 					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
-					holder.put(queryParam.value(), arg);
+					if(queryParam != null){
+						holder.put(queryParam.value(), arg);
+					}
 				}
 			}
 		}
@@ -117,7 +121,9 @@ public class QueryInterceptor implements MethodInterceptor {
 					args.add(arg);
 				}else{
 					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
-					holder.put(queryParam.value(), arg);
+					if(queryParam != null){
+						holder.put(queryParam.value(), arg);
+					}
 				}
 			}
 			args.add(holder);
