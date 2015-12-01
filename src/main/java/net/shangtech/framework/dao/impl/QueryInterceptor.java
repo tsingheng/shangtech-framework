@@ -74,12 +74,12 @@ public class QueryInterceptor implements MethodInterceptor {
 		String methodName;
 		if(method.getReturnType().getName().equals("void")){
 			methodName = "findByProperties";
-			if (args.size() == 1) {
+			if (args.size() == 2) {
 				args.add(null);
 			}
 		}else if(Collection.class.isAssignableFrom(method.getReturnType())){
 			methodName = "findByProperties";
-			if (args.size() == 2) {
+			if (args.size() == 1) {
 				args.add(null);
 			}
 		}else{
