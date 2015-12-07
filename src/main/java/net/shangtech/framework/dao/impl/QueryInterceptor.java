@@ -56,11 +56,13 @@ public class QueryInterceptor implements MethodInterceptor {
 			MapHolder<String> holder = new MapHolder<>();
 			args.add(holder);
 			Annotation[][] annotations = method.getParameterAnnotations();
+			Class<?>[] parameterTypes = method.getParameterTypes();
 			for(int i = 0; i < arguments.length; i++){
 				Object arg = arguments[i];
-				if(arg.getClass().equals(Pagination.class)){
+				Class<?> type = parameterTypes[i];
+				if(type.equals(Pagination.class)){
 					args.add(arg);
-				}else if(arg.getClass().equals(Sort.class)){
+				}else if(type.equals(Sort.class)){
 					args.add(arg);
 				}else{
 					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
@@ -115,9 +117,11 @@ public class QueryInterceptor implements MethodInterceptor {
 		}else{
 			MapHolder<String> holder = new MapHolder<>();
 			Annotation[][] annotations = method.getParameterAnnotations();
+			Class<?>[] parameterTypes = method.getParameterTypes();
 			for(int i = 0; i < arguments.length; i++){
 				Object arg = arguments[i];
-				if(arg.getClass().equals(Pagination.class)){
+				Class<?> type = parameterTypes[i];
+				if(type.equals(Pagination.class)){
 					args.add(arg);
 				}else{
 					QueryParam queryParam = (QueryParam) getQueryParam(annotations[i]);
@@ -139,6 +143,9 @@ public class QueryInterceptor implements MethodInterceptor {
 				scalarMap.put(scalar.column(), type);
 			}
 			for(Object arg : args){
+				if(arg == null){
+					continue;
+				}
 				if(MapHolder.class.equals(arg.getClass())){
 					@SuppressWarnings("unchecked")
 					MapHolder<String> holder = (MapHolder<String>) arg;
@@ -177,7 +184,7 @@ public class QueryInterceptor implements MethodInterceptor {
 			return false;
 		}else{
 			for(Object arg : arguments){
-				if(arg.getClass().equals(MapHolder.class)){
+				if(arg != null && arg.getClass().equals(MapHolder.class)){
 					return true;
 				}
 			}

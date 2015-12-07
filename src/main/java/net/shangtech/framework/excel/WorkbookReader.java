@@ -56,6 +56,25 @@ public class WorkbookReader<T> {
 		initialize();
 	}
 	
+	public static Workbook createWorkBook(InputStream is){
+		Workbook book = null;
+		try{
+			if(!is.markSupported()){
+				is = new PushbackInputStream(is, 512);
+			}
+			if(POIFSFileSystem.hasPOIFSHeader(is)){
+				book = new HSSFWorkbook(is);
+			}else if(POIXMLDocument.hasOOXMLHeader(is)){
+				book = new XSSFWorkbook(is);
+			}else{
+				throw new RuntimeException("不支持的excel文件格式");
+			}
+		}catch(Exception e){
+			
+		}
+		return book;
+	}
+	
 	public void read(InputStream is){
 		try{
 			if(!is.markSupported()){

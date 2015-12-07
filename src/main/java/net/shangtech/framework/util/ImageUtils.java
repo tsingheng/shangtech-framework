@@ -1,5 +1,6 @@
 package net.shangtech.framework.util;
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Transparency;
@@ -21,9 +22,10 @@ public class ImageUtils {
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		
 //		bi = graphics.getDeviceConfiguration().createCompatibleImage(width, height, Transparency.TRANSLUCENT);
-		bi = bi.createGraphics().getDeviceConfiguration().createCompatibleImage(width, height, Transparency.BITMASK);
+		bi = bi.createGraphics().getDeviceConfiguration().createCompatibleImage(width, height, Transparency.TRANSLUCENT);
 		
 		Graphics2D graphics = bi.createGraphics();
+		graphics.setBackground(Color.WHITE);
 		
 //		bi.getGraphics().drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
 		graphics.drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
