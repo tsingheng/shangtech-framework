@@ -54,7 +54,6 @@ public class QueryInterceptor implements MethodInterceptor {
 			}
 		}else{
 			MapHolder<String> holder = new MapHolder<>();
-			args.add(holder);
 			Annotation[][] annotations = method.getParameterAnnotations();
 			Class<?>[] parameterTypes = method.getParameterTypes();
 			for(int i = 0; i < arguments.length; i++){
@@ -71,6 +70,7 @@ public class QueryInterceptor implements MethodInterceptor {
 					}
 				}
 			}
+			args.add(holder);
 		}
 		
 		String methodName;
