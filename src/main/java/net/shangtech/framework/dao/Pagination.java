@@ -83,6 +83,9 @@ public class Pagination<T> {
 	}
 
 	public void setLimit(Integer limit) {
+		if(limit == null){
+			limit = DEFAULT_PAGE_SIZE;
+		}
 		this.limit = limit;
 		start = limit * (pageNo - 1);
 	}
@@ -117,6 +120,9 @@ public class Pagination<T> {
 	}
 
 	public void setPage(Integer page) {
+		if(page == null){
+			page = 1;
+		}
 		this.page = page;
 		this.setPageNo(page);
 	}
