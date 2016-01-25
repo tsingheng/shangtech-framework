@@ -19,6 +19,8 @@ public class EasyTreeNode implements Serializable {
 	
 	private Long parentId;
 	
+	private Boolean checked;
+	
 	private List<EasyTreeNode> children;
 	
 	private Map<String, Object> attribute;
@@ -69,6 +71,14 @@ public class EasyTreeNode implements Serializable {
 
 	public void setParentId(Long parentId) {
 		this.parentId = parentId;
+	}
+
+	public Boolean getChecked() {
+		return checked;
+	}
+
+	public void setChecked(Boolean checked) {
+		this.checked = checked;
 	}
 	
 }
