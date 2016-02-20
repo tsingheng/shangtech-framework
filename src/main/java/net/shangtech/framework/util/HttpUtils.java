@@ -1,11 +1,14 @@
 package net.shangtech.framework.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -54,6 +57,11 @@ public class HttpUtils {
 		}
 	}
 	
+	public static String post(String url, Map<String, String> params){
+		CloseableHttpClient client = HttpClients.createDefault();
+		return post(client, url, params);
+	}
+	
 	public static String post(CloseableHttpClient client, String url, Map<String, String> params) {
 		HttpPost post = new HttpPost(url);
 		List<NameValuePair> vnps = new ArrayList<NameValuePair>();
@@ -79,16 +87,26 @@ public class HttpUtils {
 	}
 	
 	public static String buildUrl(String url, Map<String, String> params){
-		if(params == null){
+		if(params == null || params.isEmpty()){
 			return url;
 		}
+		List<String> list = new ArrayList<>();
+		for(Entry<String, String> param : params.entrySet()){
+			try {
+				list.add(param.getKey() + "=" + URLEncoder.encode(param.getValue(), "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		String queryString = StringUtils.join(list, "&");
+		
 		StringBuilder sb = new StringBuilder(url);
 		if(!url.contains("?")){
-			sb.append("?_=&");
+			sb.append("?");
+		}else if(!url.endsWith("?")){
+			sb.append("&");
 		}
-		for(Entry<String, String> param : params.entrySet()){
-			sb.append(param.getKey()).append("=").append(param.getValue()).append("&");
-		}
+		sb.append(queryString);
 		return sb.toString();
 	}
 }
