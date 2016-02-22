@@ -16,6 +16,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -60,6 +61,26 @@ public class HttpUtils {
 	public static String post(String url, Map<String, String> params){
 		CloseableHttpClient client = HttpClients.createDefault();
 		return post(client, url, params);
+	}
+	
+	public static String post(String url, String content){
+		CloseableHttpClient client = HttpClients.createDefault();
+		HttpPost post = new HttpPost(url);
+		CloseableHttpResponse response = null;
+		try{
+			HttpEntity entity = new StringEntity(content, "UTF-8");
+			post.setEntity(entity);
+			response = client.execute(post);
+			if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK || response.getEntity() == null){
+				throw new HttpRequestException();
+			}
+			return EntityUtils.toString(response.getEntity(), "UTF-8");
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new HttpRequestException(e);
+		}finally{
+			IOUtils.closeQuietly(response);
+		}
 	}
 	
 	public static String post(CloseableHttpClient client, String url, Map<String, String> params) {
