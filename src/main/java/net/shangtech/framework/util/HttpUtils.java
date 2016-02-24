@@ -65,6 +65,10 @@ public class HttpUtils {
 	
 	public static String post(String url, String content){
 		CloseableHttpClient client = HttpClients.createDefault();
+		return post(client, url, content);
+	}
+	
+	public static String post(CloseableHttpClient client, String url, String content){
 		HttpPost post = new HttpPost(url);
 		CloseableHttpResponse response = null;
 		try{
