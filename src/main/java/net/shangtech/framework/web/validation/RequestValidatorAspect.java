@@ -24,7 +24,7 @@ public class RequestValidatorAspect {
 	@Autowired
 	private LocalValidatorFactoryBean validatorFactoryBean;
 
-	@Around("@annotation(net.shangtech.framework.web.controller.validation.RequestValid)")
+	@Around("@annotation(net.shangtech.framework.web.validation.RequestValid)")
 	public Object validate(ProceedingJoinPoint pjp) throws Throwable{
 		MethodSignature signature = (MethodSignature) pjp.getSignature();
 		Method method = signature.getMethod();
