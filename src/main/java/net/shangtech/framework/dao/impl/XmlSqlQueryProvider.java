@@ -161,4 +161,9 @@ public class XmlSqlQueryProvider implements QueryProvider, InitializingBean {
 		}
 		logger.info("find {} sql definitions in [{}]", sqlNodeList.getLength(), url);
 	}
+
+	@Override
+	public String getSqlById(String id) {
+		return getSqlById(id, null);
+	}
 }
