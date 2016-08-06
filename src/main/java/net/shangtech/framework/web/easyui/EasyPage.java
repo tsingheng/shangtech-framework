@@ -13,6 +13,8 @@ public class EasyPage<T> implements Serializable {
 	
 	private List<T> rows;
 	
+	private List<T> footer;
+	
 	public static <T> EasyPage<T> convert(Pagination<T> pagination){
 		EasyPage<T> page = new EasyPage<T>();
 		page.setTotal(pagination.getTotalCount());
@@ -34,6 +36,14 @@ public class EasyPage<T> implements Serializable {
 
 	public void setRows(List<T> rows) {
 		this.rows = rows;
+	}
+
+	public List<T> getFooter() {
+		return footer;
+	}
+
+	public void setFooter(List<T> footer) {
+		this.footer = footer;
 	}
 	
 }
