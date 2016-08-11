@@ -112,7 +112,7 @@ public class Pagination<T> {
 	}
 	
 	public boolean getIsLast(){
-		return pageNo == totalPage;
+		return pageNo >= totalPage;
 	}
 
 	public Integer getPage() {
