@@ -1,6 +1,7 @@
 package net.shangtech.framework.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import net.shangtech.framework.util.MapHolder;
 
@@ -49,4 +50,7 @@ public interface IBaseDao<T> {
 	List<T> findByProperties(MapHolder<String> holder, Sort...sorts);
 	T findOneByProperties(MapHolder<String> holder);
 	void findByProperties(Pagination<T> pagination, MapHolder<String> holder, Sort...sorts);
+	
+	<E> void query(String sqlId, Class<E> clazz, Pagination<E> pagination, Map<String, Object> params, Sort...sorts);
+	<E> List<E> query(String sqlId, Class<E> clazz, Map<String, Object> params, Sort...sorts);
 }

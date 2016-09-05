@@ -13,6 +13,15 @@ public class MapHolder<K> {
 		return holder;
 	}
 	
+	public MapHolder(){
+		super();
+	}
+	
+	public MapHolder(Map<K, Object> map){
+		super();
+		this.map = map;
+	}
+	
 	public MapHolder<K> put(K key, Object value){
 		map.put(key, value);
 		return this;

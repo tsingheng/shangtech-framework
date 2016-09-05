@@ -287,4 +287,16 @@ final public class BaseDao<T> implements IBaseDao<T> {
 		this.entityClass = entityClass;
 	}
 
+	@Override
+	public <E> void query(String sqlId, Class<E> clazz, Pagination<E> pagination, Map<String, Object> params, Sort... sorts) {
+		MapHolder<String> holder = new MapHolder<>(params);
+		queryPage(clazz, sqlId, pagination, holder);
+	}
+
+	@Override
+	public <E> List<E> query(String sqlId, Class<E> clazz, Map<String, Object> params, Sort... sorts) {
+		MapHolder<String> holder = new MapHolder<>(params);
+		return queryList(clazz, sqlId, holder);
+	}
+
 }
