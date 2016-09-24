@@ -56,6 +56,7 @@ public class DaoComponentScanner extends ClassPathBeanDefinitionScanner {
 			Class<?> clazz = ClassUtils.getClass(definitionHolder.getBeanDefinition().getBeanClassName());
 			BeanDefinition definition = new GenericBeanDefinition();
 			definition.setParentName("parentGenericDaoProxy");
+			definition.setAttribute("className", clazz.getName());
 			definition.getPropertyValues().addPropertyValue("proxyInterfaces", new Class<?>[]{clazz});
 			definition.getPropertyValues().addPropertyValue("target", baseDaoDefinition);
 			
